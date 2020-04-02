@@ -12,6 +12,18 @@ main() {
         clean)
             clean
         ;;
+        link)
+            link
+        ;;
+        unlink)
+            unlink
+        ;;
+        secure)
+            secure
+        ;;
+        unsecure)
+            unsecure
+        ;;
         test)
             if [ ! $1 ]; then
                 php artisan test
@@ -52,7 +64,12 @@ test            Run test suites
 test:unit       Run unit test suites
 test:features   Run features test suites
 
-assets          Build JS/CSS assets, -f for polling
+assets          Build JS/CSS assets, (watch, prod)
+
+link            Link the current working directory to Valet
+unlink          Remove the specified Valet link
+secure          Secure the given domain with a trusted TLS certificate 
+unsecure        Stop serving the given domain over HTTPS and remove the trusted TLS certificate
 
 up       Start development environment (--build to rebuild)
 down     Stop development environment
@@ -61,10 +78,8 @@ shell    Enter php container shell (or run command directly)
 debug    Turn debugging (xdebug) on or off
 logs     Show PHP logs
 artisan  Run Laravel Artisan (php artisan) commands
-assets   Build JS/CSS assets, -f for polling
 docs     Build component documentation
 import   Import a Heroku PostgreSQL backup
-ssl      Install LetsEncrypt SSL certificate
             
 EOF
 
@@ -85,15 +100,24 @@ assets(){
     fi
 }
 install(){
+    docker-compose up -d
+    composer install
+
+    # add defaults from .env.default to .env
+    touch .env
+    local ENV=$(cat .env .env.docker | grep -v -e '^#' -e '^$' | sort -t= -k1,1 -s -u)
+    echo "$ENV" > .env
+
+    php artisan key:gen
     #docker run --name remote-mysql -e MYSQL_ROOT_PASSWORD=secret-pw MYSQL_ROOT_PASSWORD=secret-pw -p 3308:3306 -d mysql:5.7
     #docker ps -a
     #mysql -P 3308 --protocol=tcp -u root 
     #remote_mysql_1
     #docker run --name remote-mysql -p 3307:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -e MYSQL_DATABASE=remote -d mysql:latest
-    docker-compose up -d
+    
     #mysql -P 3307 --protocol=tcp -u root -pmy-secret-pw
     #docker exec -it remote_mysql sh -c 'exce'
-    composer dump-autoload
+    #composer dump-autoload
     npm i
     npm run dev
     #docker-compose exec remote_mysql mysql -u root
@@ -102,14 +126,25 @@ install(){
     #mysql -P 8083 -u root
 
     
-    #valet link remote &&
-    #valet links
+    
 }
 clean(){
     docker-compose down
     docker stop remote_mysql && docker rm remote_mysql
-    #valet unlink remote &&
-    #valet links
+}
+link(){
+    valet link remote &&
+    valet links
+}
+unlink(){
+    valet unlink remote &&
+    valet links
+}
+secure(){
+    valet secure
+}
+unsecure(){
+    valet unsecure
 }
 
 main "$@"
