@@ -1,0 +1,115 @@
+#!/bin/bash
+
+main() {
+    cd $(dirname $0)
+    #init
+    COMMAND=$1
+    shift
+    case $COMMAND in 
+        install)
+            install
+        ;;
+        clean)
+            clean
+        ;;
+        test)
+            if [ ! $1 ]; then
+                php artisan test
+            else 
+            echo $@
+                php artisan test $@
+            fi
+            ;;
+        test:unit)
+            if [[ $@ == *":"* ]]; then
+                arrIN=(${@//:/ })
+                php artisan test --filter  ${arrIN[1]} tests/Unit/${arrIN[0]}.php
+            else 
+                php artisan test tests/Unit/$@
+            fi  
+            ;;
+        test:feature)
+            if [[ $@ == *":"* ]]; then
+                arrIN=(${@//:/ })
+                php artisan test --filter  ${arrIN[1]} tests/Feature/${arrIN[0]}.php
+            else 
+                php artisan test tests/Feature/$@
+            fi  
+            ;;
+        assets)
+            assets $@
+        ;;
+        
+        *)
+            cat <<EOF
+Development Environment Manager
+
+Usage: ./nb <command> [options]
+
+The following commands are supported:
+
+test            Run test suites
+test:unit       Run unit test suites
+test:features   Run features test suites
+
+assets          Build JS/CSS assets, -f for polling
+
+up       Start development environment (--build to rebuild)
+down     Stop development environment
+clean    Destroy development environment and all data
+shell    Enter php container shell (or run command directly)
+debug    Turn debugging (xdebug) on or off
+logs     Show PHP logs
+artisan  Run Laravel Artisan (php artisan) commands
+assets   Build JS/CSS assets, -f for polling
+docs     Build component documentation
+import   Import a Heroku PostgreSQL backup
+ssl      Install LetsEncrypt SSL certificate
+            
+EOF
+
+            exit 1
+            ;;
+    esac
+}
+
+init() {
+    echo ''
+}
+assets(){
+    if [ ! $1 ]; then
+        npm run dev
+    else 
+        echo $1
+        npm run $1
+    fi
+}
+install(){
+    #docker run --name remote-mysql -e MYSQL_ROOT_PASSWORD=secret-pw MYSQL_ROOT_PASSWORD=secret-pw -p 3308:3306 -d mysql:5.7
+    #docker ps -a
+    #mysql -P 3308 --protocol=tcp -u root 
+    #remote_mysql_1
+    #docker run --name remote-mysql -p 3307:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -e MYSQL_DATABASE=remote -d mysql:latest
+    docker-compose up -d
+    #mysql -P 3307 --protocol=tcp -u root -pmy-secret-pw
+    #docker exec -it remote_mysql sh -c 'exce'
+    composer dump-autoload
+    npm i
+    npm run dev
+    #docker-compose exec remote_mysql mysql -u root
+    php artisan migrate:fresh --seed
+    #show databases;
+    #mysql -P 8083 -u root
+
+    
+    #valet link remote &&
+    #valet links
+}
+clean(){
+    docker-compose down
+    docker stop remote_mysql && docker rm remote_mysql
+    #valet unlink remote &&
+    #valet links
+}
+
+main "$@"

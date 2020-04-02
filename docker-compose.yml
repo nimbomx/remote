@@ -1,0 +1,16 @@
+version: '3'
+services:
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: remote_mysql
+    restart: always
+    tty: true
+    ports:
+      - 3307:3306
+
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: remote
+      MYSQL_USER: remote_user
+      MYSQL_PASSWORD: user-secret-pw
