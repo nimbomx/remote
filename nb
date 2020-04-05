@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# requirements
+# - docker
+# - valet
+# - composer
+# - node
+
 main() {
     cd $(dirname $0)
     #init
