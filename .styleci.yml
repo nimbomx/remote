@@ -1,10 +1,8 @@
 php:
-  preset: laravel
+  preset: recommended
   risky: true
-  enabled:
-    - long_array_syntax
-  disabled:
-    - align_double_arrow
+  tab-width: 4
+  use-tabs: false
   finder:
     exclude:
       - modules
